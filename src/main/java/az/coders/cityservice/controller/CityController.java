@@ -1,8 +1,8 @@
 package az.coders.cityservice.controller;
 
+import az.coders.cityservice.exception.CityNotFoundException;
 import az.coders.cityservice.model.City;
 import az.coders.cityservice.service.CityService;
-import az.coders.cityservice.service.CityServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +21,14 @@ public class CityController {
 
 
     @GetMapping
-    public ResponseEntity<List<City>> getCities() {
-        return new ResponseEntity<>(cityService.getCities(), OK);
+    public ResponseEntity<List<City>> getCities(@RequestParam(required = false) String name) {
+        return new ResponseEntity<>(cityService.getCities(name), OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<City> getCity(@PathVariable Long id) {
-        City city1 = getCityById(id);
-        return new ResponseEntity<>(city1, OK);
+            City city1 = getCityById(id);
+            return new ResponseEntity<>(city1, OK);
     }
 
     @PostMapping("/add")
@@ -38,9 +38,7 @@ public class CityController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateCity(@PathVariable Long id, @RequestBody City city) {
-        City oldCity = getCityById(id);
-        oldCity.setName(city.getName());
-        oldCity.setCreateDate(new Date());
+        cityService.updateCity(city,id);
         return new ResponseEntity<>(OK);
     }
 
@@ -53,5 +51,10 @@ public class CityController {
 
     private City getCityById(Long id) {
         return cityService.getCityById(id);
+    }
+
+    @ExceptionHandler(CityNotFoundException.class)
+    public ResponseEntity<String> cityNotFoundExHandler(CityNotFoundException e){
+        return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
     }
 }
